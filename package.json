@@ -4,10 +4,15 @@
   "private": true,
   "description": "Smart URL timer dashboard with 60-second auto endpoint checks",
   "scripts": {
-    "start": "http-server . -p 3000 -c-1",
-    "dev": "http-server . -p 3000 -c-1"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "node --check server.js && node --check index.js",
+    "lint": "node --check server.js && node --check index.js"
   },
   "devDependencies": {
     "http-server": "^14.1.1"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
   }
 }
