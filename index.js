@@ -18,6 +18,8 @@ const singleSection = document.getElementById("singleSection");
 const multiSection = document.getElementById("multiSection");
 const numberListContainer = document.getElementById("numberListContainer");
 const countBadge = document.getElementById("countBadge");
+const serverModeToggle = document.getElementById("serverModeToggle");
+const serverStatusText = document.getElementById("serverStatusText");
 
 /* ================= STATE ================= */
 let currentMode = "single"; // 'single' or 'multi'
@@ -27,6 +29,8 @@ let deadline  = 0;
 let ticker    = null;
 let checks    = 0;
 let savedNumbers = [];
+let serverMode = false;
+let serverStatusPoll = null;
 
 /* ================= HELPERS ================= */
 const pad = n => String(n).padStart(2, "0");
@@ -52,6 +56,7 @@ function setRunningUI(on) {
   newNumberEl.disabled = on;
   singleTab.disabled = on;
   multiTab.disabled = on;
+  serverModeToggle.disabled = on;
 }
 
 function addLog(msg, color) {
@@ -126,6 +131,18 @@ function renderNumberList() {
   });
 }
 
+/* ================= SERVER BACKGROUND TOGGLE ================= */
+serverModeToggle.addEventListener("change", (e) => {
+  serverMode = e.target.checked;
+  if (serverMode) {
+    serverStatusText.textContent = "Server 24/7 Active (Runs even when offline)";
+    serverStatusText.style.color = "#10b981";
+  } else {
+    serverStatusText.textContent = "Runs on browser tab (Standard mode)";
+    serverStatusText.style.color = "#94a3b8";
+  }
+});
+
 /* ================= CORE LOOP ================= */
 function loop() {
   const left = deadline - Date.now();
@@ -136,7 +153,9 @@ function loop() {
     deadline = Date.now() + INTERVAL_SEC * 1000;
     remaining = INTERVAL_SEC;
     render();
-    doCheck();
+    if (!serverMode) {
+      doCheck();
+    }
   }
 }
 
@@ -199,57 +218,107 @@ async function doCheck() {
 
   setTimeout(() => {
     timerEl.style.color = "#38bdf8";
-    if (running) setStatus("AUTO CHECK ON • EVERY 60s", "#22c55e");
+    if (running) setStatus(serverMode ? "SERVER 24/7 ACTIVE" : "AUTO CHECK ON • EVERY 60s", "#22c55e");
   }, 1200);
 }
 
 /* ================= CONTROLS ================= */
-function startTimer() {
+async function startTimer() {
   if (running) return;
 
+  let numbersToCheck = [];
   if (currentMode === "single") {
-    if (!isValid(numberEl.value)) {
+    const num = numberEl.value.trim();
+    if (!isValid(num)) {
       alert("Please enter a valid Bangladesh mobile number!");
       return;
     }
-    localStorage.setItem("aminul_number", numberEl.value.trim());
+    localStorage.setItem("aminul_number", num);
+    numbersToCheck = [num];
   } else {
     if (savedNumbers.length === 0) {
       alert("Please add at least one mobile number to the list!");
       return;
     }
+    numbersToCheck = [...savedNumbers];
   }
 
-  running   = true;
-  checks    = 0;
+  running = true;
+  checks = 0;
   checksEl.textContent = "0";
-  deadline  = Date.now() + INTERVAL_SEC * 1000;
-  remaining = INTERVAL_SEC;
-  render();
+
+  if (serverMode) {
+    // Start background cron on server
+    try {
+      const res = await fetch("/api/server-timer/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ numbers: numbersToCheck })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      addLog("🌐 SERVER 24/7 BACKGROUND STARTED", "#22c55e");
+      setStatus("SERVER 24/7 ACTIVE", "#22c55e");
+      timerEl.style.color = "#10b981";
+
+      // Poll server status every 5 seconds
+      serverStatusPoll = setInterval(async () => {
+        try {
+          const sRes = await fetch("/api/server-timer/status");
+          const sData = await sRes.json();
+          if (sData.success) {
+            checks = sData.checks;
+            checksEl.textContent = checks;
+            if (sData.logs && sData.logs.length > 0) {
+              // sync latest server log if needed
+            }
+          }
+        } catch (e) {}
+      }, 5000);
+
+    } catch (err) {
+      alert("Failed to start server timer: " + err.message);
+      running = false;
+      return;
+    }
+  } else {
+    deadline  = Date.now() + INTERVAL_SEC * 1000;
+    remaining = INTERVAL_SEC;
+    render();
+
+    setStatus("AUTO CHECK ON • EVERY 60s", "#22c55e");
+    addLog("▶ TIMER STARTED (" + (currentMode === "single" ? "Single" : numbersToCheck.length + " Numbers") + ")", "#22c55e");
+
+    ticker = setInterval(loop, 200);
+    loop();
+  }
 
   setRunningUI(true);
-  setStatus("AUTO CHECK ON • EVERY 60s", "#22c55e");
-  addLog("▶ TIMER STARTED (" + (currentMode === "single" ? "Single" : savedNumbers.length + " Numbers") + ")", "#22c55e");
-
-  ticker = setInterval(loop, 200);
-  loop();
 }
 
-function stopTimer() {
-  clearInterval(ticker);
-  ticker  = null;
-  running = false;
+async function stopTimer() {
+  if (serverMode) {
+    try {
+      await fetch("/api/server-timer/stop", { method: "POST" });
+      if (serverStatusPoll) clearInterval(serverStatusPoll);
+      serverStatusPoll = null;
+      addLog("■ SERVER TIMER STOPPED", "#ef4444");
+    } catch (e) {}
+  } else {
+    clearInterval(ticker);
+    ticker = null;
+    addLog("■ TIMER STOPPED", "#ef4444");
+  }
 
+  running = false;
   setRunningUI(false);
   setStatus("TIMER STOPPED", "#ef4444");
   timerEl.style.color = "#38bdf8";
-  addLog("■ TIMER STOPPED", "#ef4444");
 }
 
 function resetTimer() {
-  clearInterval(ticker);
-  ticker    = null;
-  running   = false;
+  stopTimer();
   checks    = 0;
   remaining = INTERVAL_SEC;
   deadline  = 0;
@@ -258,7 +327,6 @@ function resetTimer() {
   timerEl.style.color = "#38bdf8";
   render();
 
-  setRunningUI(false);
   setStatus("READY TO START", "#64748b");
   addLog("↻ RESET", "#94a3b8");
 }
@@ -283,6 +351,16 @@ function openURL() {
     addLog("🌐 OPENED " + savedNumbers.length + " URL(S)", "#38bdf8");
   }
 }
+
+/* ================= PAGE VISIBILITY FIX ================= */
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && running && !serverMode && deadline > 0) {
+    // Tab became visible again — recalculate remaining time instantly
+    const left = deadline - Date.now();
+    remaining = Math.max(0, Math.ceil(left / 1000));
+    render();
+  }
+});
 
 /* ================= INIT ================= */
 (function init() {

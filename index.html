@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080d1b">
-<title>AMINUL URL TIMER - MULTI NUMBER</title>
+<title>AMINUL URL TIMER - SERVER BACKGROUND</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -46,7 +46,7 @@ body{
 
 .mode-tabs{
   display:grid;grid-template-columns:1fr 1fr;gap:8px;
-  margin-bottom:18px;background:#0b1427;padding:4px;border-radius:14px;
+  margin-bottom:15px;background:#0b1427;padding:4px;border-radius:14px;
   border:1px solid #1e2f4a;
 }
 .mode-tab{
@@ -57,6 +57,31 @@ body{
   background:linear-gradient(135deg,#0ea5e9,#2563eb);
   color:#fff;box-shadow:0 4px 15px #0ea5e944;
 }
+
+.server-mode-box{
+  background:linear-gradient(145deg,#0b2238,#0b1427);
+  border:1px solid #0ea5e955;border-radius:14px;
+  padding:12px 15px;margin-bottom:15px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.server-mode-info b{display:block;font-size:13px;color:#38bdf8}
+.server-mode-info span{font-size:11px;color:#94a3b8}
+
+/* Toggle Switch */
+.switch {
+  position: relative; display: inline-block; width: 46px; height: 24px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #263957; transition: .3s; border-radius: 24px;
+}
+.slider:before {
+  position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+  background-color: white; transition: .3s; border-radius: 50%;
+}
+input:checked + .slider { background-color: #10b981; }
+input:checked + .slider:before { transform: translateX(22px); }
 
 .label{display:block;color:#cbd5e1;font-size:13px;margin-bottom:8px}
 
@@ -87,7 +112,7 @@ input:disabled, textarea:disabled{opacity:.55}
 
 .number-list-container{
   background:#0b1427;border:1px solid #1e2f4a;border-radius:13px;
-  padding:10px;max-height:130px;overflow-y:auto;margin-bottom:12px;
+  padding:10px;max-height:120px;overflow-y:auto;margin-bottom:12px;
 }
 .number-list-container::-webkit-scrollbar{width:4px}
 .number-list-container::-webkit-scrollbar-thumb{background:#263957;border-radius:4px}
@@ -107,8 +132,8 @@ input:disabled, textarea:disabled{opacity:.55}
 }
 
 .timer-box{
-  margin:18px 0 15px;
-  padding:20px 10px;
+  margin:15px 0 15px;
+  padding:18px 10px;
   background:linear-gradient(145deg,#14233d,#0b1427);
   border:1px solid #263957;
   border-radius:20px;
@@ -118,7 +143,7 @@ input:disabled, textarea:disabled{opacity:.55}
 .timer-title{color:#94a3b8;font-size:11px;letter-spacing:2px}
 
 .timer{
-  font-size:56px;font-weight:bold;margin:8px 0;
+  font-size:52px;font-weight:bold;margin:8px 0;
   color:#38bdf8;
   font-variant-numeric:tabular-nums;
   text-shadow:0 0 25px #38bdf855;
@@ -187,7 +212,18 @@ button.ctrl-btn:disabled{opacity:.4;cursor:not-allowed}
   <div class="header">
     <div class="logo">⚡</div>
     <h1>AMINUL TIMER</h1>
-    <p>MULTI-NUMBER URL TIMER DASHBOARD</p>
+    <p>SERVER BACKGROUND AUTO TIMER</p>
+  </div>
+
+  <div class="server-mode-box">
+    <div class="server-mode-info">
+      <b>🌐 Server 24/7 Background</b>
+      <span id="serverStatusText">Runs on server even if website is closed</span>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="serverModeToggle">
+      <span class="slider"></span>
+    </label>
   </div>
 
   <div class="mode-tabs">
