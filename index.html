@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d1b">
+<title>AMINUL URL TIMER</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  min-height:100vh;
+  background:radial-gradient(circle at top,#172c50,#080d1b 65%);
+  font-family:Arial,sans-serif;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+.app{
+  width:100%;
+  max-width:420px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:25px;
+  padding:25px 20px;
+  box-shadow:0 20px 60px #0008;
+  backdrop-filter:blur(20px);
+}
+
+.header{text-align:center;margin-bottom:25px}
+
+.logo{
+  width:65px;height:65px;border-radius:20px;
+  background:linear-gradient(135deg,#00d4ff,#635bff);
+  display:flex;justify-content:center;align-items:center;
+  font-size:30px;margin:0 auto 15px;
+  box-shadow:0 0 30px #00cfff55;
+}
+
+.header h1{font-size:23px;letter-spacing:1px}
+.header p{color:#94a3b8;font-size:12px;margin-top:8px}
+
+.label{display:block;color:#cbd5e1;font-size:13px;margin-bottom:10px}
+
+.input-box{
+  background:#0b1427;
+  border:1px solid #263957;
+  border-radius:13px;
+  padding:0 15px;
+  display:flex;
+  align-items:center;
+}
+
+.input-box span{color:#38bdf8;font-size:18px}
+
+input{
+  width:100%;background:transparent;border:0;outline:none;
+  color:white;padding:17px 12px;font-size:17px;
+  font-variant-numeric:tabular-nums;
+}
+input:disabled{opacity:.55}
+
+.timer-box{
+  margin:22px 0 18px;
+  padding:22px 10px;
+  background:linear-gradient(145deg,#14233d,#0b1427);
+  border:1px solid #263957;
+  border-radius:20px;
+  text-align:center;
+}
+
+.timer-title{color:#94a3b8;font-size:12px;letter-spacing:2px}
+
+.timer{
+  font-size:62px;font-weight:bold;margin:10px 0;
+  color:#38bdf8;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 0 25px #38bdf855;
+  transition:color .3s;
+}
+
+.status{
+  display:flex;justify-content:center;align-items:center;
+  gap:8px;color:#94a3b8;font-size:12px;
+  min-height:16px;
+}
+
+.dot{
+  width:8px;height:8px;border-radius:50%;
+  background:#64748b;transition:.3s;
+}
+
+.stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;
+}
+.stat{
+  background:#0b1427;border:1px solid #1e2f4a;border-radius:12px;
+  padding:12px;text-align:center;
+}
+.stat span{display:block;color:#7d8ea8;font-size:10px;letter-spacing:1px}
+.stat b{display:block;margin-top:5px;font-size:18px;color:#38bdf8}
+
+.log-box{
+  background:#0b1427;border:1px solid #1e2f4a;border-radius:13px;
+  padding:12px;margin-bottom:18px;
+}
+.log-title{color:#7d8ea8;font-size:10px;letter-spacing:2px;margin-bottom:8px}
+.log{max-height:110px;overflow-y:auto;font-size:11px}
+.log::-webkit-scrollbar{width:4px}
+.log::-webkit-scrollbar-thumb{background:#263957;border-radius:4px}
+.log-row{
+  display:flex;justify-content:space-between;gap:10px;
+  padding:4px 0;border-bottom:1px dashed #16233a;
+}
+.log-row:last-child{border-bottom:0}
+.log-time{color:#64748b;font-variant-numeric:tabular-nums}
+.log-empty{color:#475569;text-align:center;padding:8px 0}
+
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+button{
+  border:0;border-radius:13px;padding:16px 10px;
+  font-size:14px;font-weight:bold;cursor:pointer;
+  transition:.2s;color:#fff;
+}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.4;cursor:not-allowed}
+
+.start{background:linear-gradient(135deg,#10b981,#059669)}
+.stop{background:linear-gradient(135deg,#ef4444,#dc2626)}
+.reset{background:#263957}
+.open{background:linear-gradient(135deg,#0ea5e9,#2563eb);grid-column:span 2}
+
+.footer{text-align:center;color:#64748b;font-size:11px;margin-top:22px}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="logo">⚡</div>
+    <h1>AMINUL TIMER</h1>
+    <p>SMART URL TIMER DASHBOARD</p>
+  </div>
+
+  <label class="label">MOBILE NUMBER</label>
+  <div class="input-box">
+    <span>📱</span>
+    <input type="tel" id="number" placeholder="017XXXXXXXX" maxlength="11">
+  </div>
+
+  <div class="timer-box">
+    <div class="timer-title">NEXT AUTO CHECK IN</div>
+    <div class="timer" id="timer">01:00</div>
+    <div class="status">
+      <span class="dot" id="dot"></span>
+      <span id="status">READY TO START</span>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span>TOTAL CHECKS</span><b id="checks">0</b></div>
+    <div class="stat"><span>INTERVAL</span><b>60s</b></div>
+  </div>
+
+  <div class="log-box">
+    <div class="log-title">ACTIVITY LOG</div>
+    <div class="log" id="log">
+      <div class="log-empty">No activity yet</div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button class="start" id="startBtn" onclick="startTimer()">▶ START</button>
+    <button class="stop" id="stopBtn" onclick="stopTimer()" disabled>■ STOP</button>
+    <button class="reset" onclick="resetTimer()">↻ RESET</button>
+    <button class="open" onclick="openURL()">🌐 OPEN URL NOW</button>
+  </div>
+
+  <div class="footer">MADE WITH ❤️ BY AMINULSORDAR</div>
+</div>
+
+<script src="index.js" defer></script>
+</body>
+</html>
